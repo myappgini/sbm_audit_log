@@ -125,9 +125,7 @@ foreach ($tables as $tn => $table) {
     $hook = "{$path}/hooks/{$tn}.php";
 
     $function = "{$tn}_init";
-    $code = "\$_SESSION ['tablenam'] = \$options->TableName;
-             \$_SESSION ['tableID'] = \$options->PrimaryKey;
-             \$tableID = \$_SESSION ['tableID'];";
+    $code = "\$_SESSION ['tablenam'] = \$options->TableName; \$_SESSION ['tableID'] = \$options->PrimaryKey; \$tableID = \$_SESSION ['tableID'];";
     if ($write_to_hooks) {
         $res = $MyPlugin->add_to_hook($hook, $function, $code);
         inspect_result($res, $function, $MyPlugin);
@@ -139,9 +137,7 @@ foreach ($tables as $tn => $table) {
     }
 
     $function = "{$tn}_after_insert";
-    $code = "table_after_change(\$_SESSION ['dbase'], \$_SESSION['tablenam'],
-            \$memberInfo['username'], \$memberInfo['IP'], \$data['selectedID'],
-            \$_SESSION['tableID'], 'INSERTION');";
+    $code = "table_after_change(\$_SESSION ['dbase'], \$_SESSION['tablenam'], \$memberInfo['username'], \$memberInfo['IP'], \$data['selectedID'], \$_SESSION['tableID'], 'INSERTION');";
     if ($write_to_hooks) {
         $res = $MyPlugin->add_to_hook($hook, $function, $code);
         inspect_result($res, $function, $MyPlugin);
@@ -164,9 +160,7 @@ foreach ($tables as $tn => $table) {
     }
 
     $function = "{$tn}_after_update";
-    $code = "table_after_change(\$_SESSION ['dbase'], \$_SESSION['tablenam'],
-             \$memberInfo['username'], \$memberInfo['IP'], \$data['selectedID'],
-             \$_SESSION['tableID'], 'UPDATE');";
+    $code = "table_after_change(\$_SESSION ['dbase'], \$_SESSION['tablenam'], \$memberInfo['username'], \$memberInfo['IP'], \$data['selectedID'], \$_SESSION['tableID'], 'UPDATE');";
     if ($write_to_hooks) {
         $res = $MyPlugin->add_to_hook($hook, $function, $code);
         inspect_result($res, $function, $MyPlugin);
@@ -189,9 +183,7 @@ foreach ($tables as $tn => $table) {
     }
 
     $function = "{$tn}_after_delete";
-    $code = "table_after_change(\$_SESSION ['dbase'], \$_SESSION['tablenam'],
-             \$memberInfo['username'], \$memberInfo['IP'], \$selectedID,
-             \$_SESSION['tableID'], 'DELETION');";
+    $code = "table_after_change(\$_SESSION ['dbase'], \$_SESSION['tablenam'], \$memberInfo['username'], \$memberInfo['IP'], \$selectedID, \$_SESSION['tableID'], 'DELETION');";
     if ($write_to_hooks) {
         $res = $MyPlugin->add_to_hook($hook, $function, $code);
         inspect_result($res, $function, $MyPlugin);
