@@ -6,6 +6,6 @@
         "Date": "07/14/2014",
         "Updated": "19/01/20",
         "Version":"1.71",
-        "product_use":"5.92",
+        "product_use":"5.93",
         "info":"I present version 1.7 of the auditor.<ul><li>added possibility to easily define the name of your auditor table in the beginning of the the files auditLog_functions.php and /admin/auditLog.php</li><li>changed code in the way that now the order of fields in the database must not match the order of fields in your AppGini application anymore. In previous versions the order must be the same, otherwise it would mess up the logging. Now this problem should be solved.</li><li>added a new function Audit_Manually which allows checking for changes on another table and documenting those (see description below for more information).</li><li>transformed docs to PDF for easier editing</li><li>changed audit_tableSQL.sql to make larger fields for table and fieldnames</li></ul>"
 }
