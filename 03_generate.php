@@ -1,4 +1,4 @@
-<?php include(dirname(__FILE__) . '/header.php');
+<?php include dirname(__FILE__) . '/header.php';
 
 try {
     if (!isset($_POST['path'])) {
@@ -41,15 +41,15 @@ try {
 
 $write_to_hooks = $_REQUEST['dont_write_to_hooks'] == 1 ? false : true;
 ?>
-
+           
 <div class="bs-docs-section row">
     <h1 class="page-header">
-        <img src="<?php echo $MyPlugin->logo ?>" style="height: 1em;"> 
+        <img src="<?php echo $MyPlugin->logo; ?>" style="height: 1em;"> 
         <?php echo $MyPlugin->title; ?>
     </h1>
 	<p class="lead">
 		<a href="./index.php">Home</a> > 
-		<a href="./02_output.php">  Select output folder</a> > Coping Files MPI
+		<a href="./02_output.php">  Select output folder</a> > Coping Files <?php echo $MyPlugin->name; ?>
 	</p>
 </div>
 
@@ -58,97 +58,151 @@ $write_to_hooks = $_REQUEST['dont_write_to_hooks'] == 1 ? false : true;
 <?php
 $MyPlugin->progress_log->add("Output folder: $path", 'text-info');
 
-//coping resources 
+//coping resources
 
 $MyPlugin->progress_log->ok();
 $MyPlugin->progress_log->line();
 
 $source = dirname(__FILE__) . '/app-resources/auditLog.php';
 $dest = $path . '/admin/auditLog.php';
-$MyPlugin->my_copy_file($source,$dest,true);
+$MyPlugin->my_copy_file($source, $dest, true);
 
 $source = dirname(__FILE__) . '/app-resources/auditLog_functions.php';
 $dest = $path . '/hooks/audit/auditLog_functions.php';
-$MyPlugin->my_copy_file($source,$dest,true);
+$MyPlugin->my_copy_file($source, $dest, true);
 
 $source = dirname(__FILE__) . '/app-resources/button.js';
 $dest = $path . '/hooks/audit/button.js';
-$MyPlugin->my_copy_file($source,$dest,true);
+$MyPlugin->my_copy_file($source, $dest, true);
 
 $source = dirname(__FILE__) . '/app-resources/scripts.php';
 $dest = $path . '/hooks/audit/scripts.php';
-$MyPlugin->my_copy_file($source,$dest,true);
+$MyPlugin->my_copy_file($source, $dest, true);
 
 $MyPlugin->progress_log->line();
-$code ="<?php include('audit/scripts.php');?>";
-$file_path = $path . '/hooks/__global.php';
-$res = $MyPlugin->add_to_file($file_path, false, $code);
-
-$sql = file_get_contents(dirname(__FILE__) .'/app-resources/audit_tableSQL.sql');
+$MyPlugin->progress_log->add(
+    'Adding New table on current data base',
+    'text-info'
+);
+$sql = file_get_contents(
+    dirname(__FILE__) . '/app-resources/audit_tableSQL.sql'
+);
 if ($sql) {
     $eo = ['silentErrors' => true];
-    $res = sql($sql,$eo);
-    if($eo['error']!=''){
-        $MyPlugin->progress_log->add('ERROR: Audit table not created',
-        'text-danger spacer');
-    }else{
+    $res = sql($sql, $eo);
+    if ($eo['error'] != '') {
+        $MyPlugin->progress_log->add(
+            'ERROR: Audit table not created',
+            'text-danger spacer'
+        );
+    } else {
         $MyPlugin->progress_log->add('Audit table created');
     }
 }
 
+$MyPlugin->progress_log->line();
+$MyPlugin->progress_log->add('Adding code to hooks', 'text-info');
+$MyPlugin->progress_log->add('File: __global.php');
+$code = "<?php include('audit/scripts.php');?>";
+$file_path = $path . '/hooks/__global.php';
+if ($write_to_hooks) {
+    $res = $MyPlugin->add_to_file($file_path, false, $code);
+    inspect_result($res, $file_path, $MyPlugin);
+} else {
+    $code = "include('audit/scripts.php');";
+    $MyPlugin->progress_log->add("File: {$file_path}");
+    $MyPlugin->progress_log->add('On top of function');
+    $MyPlugin->progress_log->add("Install code: {$code}");
+    $MyPlugin->progress_log->line();
+}
+
+if ($write_to_hooks) {
+}
+
 $tables = getTableList(true);
-foreach ($tables as $tn=>$table) {
-    
-    $MyPlugin->progress_log->add('Table: '.$table[0]);
+foreach ($tables as $tn => $table) {
+    $MyPlugin->progress_log->add('Table: ' . $table[0], 'text-info');
     $hook = "{$path}/hooks/{$tn}.php";
 
     $function = "{$tn}_init";
     $code = "\$_SESSION ['tablenam'] = \$options->TableName;
              \$_SESSION ['tableID'] = \$options->PrimaryKey;
              \$tableID = \$_SESSION ['tableID'];";
-    $res = $MyPlugin->add_to_hook($hook,$function,$code);
-    inspect_result($res, $function, $MyPlugin);
-
+    if ($write_to_hooks) {
+        $res = $MyPlugin->add_to_hook($hook, $function, $code);
+        inspect_result($res, $function, $MyPlugin);
+    } else {
+        $MyPlugin->progress_log->add("File: {$hook}", 'text-info');
+        $MyPlugin->progress_log->add("Hook function: {$function}");
+        $MyPlugin->progress_log->add("Install code:  {$code}");
+        $MyPlugin->progress_log->line();
+    }
 
     $function = "{$tn}_after_insert";
     $code = "table_after_change(\$_SESSION ['dbase'], \$_SESSION['tablenam'],
             \$memberInfo['username'], \$memberInfo['IP'], \$data['selectedID'],
             \$_SESSION['tableID'], 'INSERTION');";
-    $res =$MyPlugin->add_to_hook($hook,$function,$code);
-    inspect_result($res, $function, $MyPlugin);
+    if ($write_to_hooks) {
+        $res = $MyPlugin->add_to_hook($hook, $function, $code);
+        inspect_result($res, $function, $MyPlugin);
+    } else {
+        $MyPlugin->progress_log->add("Hook function: {$function}");
+        $MyPlugin->progress_log->add("Install code:  {$code}");
+        $MyPlugin->progress_log->line();
+    }
 
-    
     $function = "{$tn}_before_update";
-    $code = "table_before_change(\$_SESSION['tablenam'], \$data['selectedID'],\$_SESSION['tableID']);";
-    $res = $MyPlugin->add_to_hook($hook,$function,$code);
-    inspect_result($res, $function, $MyPlugin);
-
+    $code =
+        "table_before_change(\$_SESSION['tablenam'], \$data['selectedID'],\$_SESSION['tableID']);";
+    if ($write_to_hooks) {
+        $res = $MyPlugin->add_to_hook($hook, $function, $code);
+        inspect_result($res, $function, $MyPlugin);
+    } else {
+        $MyPlugin->progress_log->add("Hook function: {$function}");
+        $MyPlugin->progress_log->add("Install code:  {$code}");
+        $MyPlugin->progress_log->line();
+    }
 
     $function = "{$tn}_after_update";
     $code = "table_after_change(\$_SESSION ['dbase'], \$_SESSION['tablenam'],
              \$memberInfo['username'], \$memberInfo['IP'], \$data['selectedID'],
              \$_SESSION['tableID'], 'UPDATE');";
-    $res = $MyPlugin->add_to_hook($hook,$function,$code);
-    inspect_result($res, $function, $MyPlugin);
-
+    if ($write_to_hooks) {
+        $res = $MyPlugin->add_to_hook($hook, $function, $code);
+        inspect_result($res, $function, $MyPlugin);
+    } else {
+        $MyPlugin->progress_log->add("Hook function: {$function}");
+        $MyPlugin->progress_log->add("Install code:  {$code}");
+        $MyPlugin->progress_log->line();
+    }
 
     $function = "{$tn}_before_delete";
-    $code = "table_before_change(\$_SESSION['tablenam'], \$selectedID,\$_SESSION['tableID']);";
-    $res = $MyPlugin->add_to_hook($hook,$function,$code);
-    inspect_result($res, $function, $MyPlugin);
-
+    $code =
+        "table_before_change(\$_SESSION['tablenam'], \$selectedID,\$_SESSION['tableID']);";
+    if ($write_to_hooks) {
+        $res = $MyPlugin->add_to_hook($hook, $function, $code);
+        inspect_result($res, $function, $MyPlugin);
+    } else {
+        $MyPlugin->progress_log->add("Hook function: {$function}");
+        $MyPlugin->progress_log->add("Install code:  {$code}");
+        $MyPlugin->progress_log->line();
+    }
 
     $function = "{$tn}_after_delete";
     $code = "table_after_change(\$_SESSION ['dbase'], \$_SESSION['tablenam'],
              \$memberInfo['username'], \$memberInfo['IP'], \$selectedID,
              \$_SESSION['tableID'], 'DELETION');";
-    $res = $MyPlugin->add_to_hook($hook,$function,$code);
-    inspect_result($res, $function, $MyPlugin);
-
+    if ($write_to_hooks) {
+        $res = $MyPlugin->add_to_hook($hook, $function, $code);
+        inspect_result($res, $function, $MyPlugin);
+    } else {
+        $MyPlugin->progress_log->add("Hook function: {$function}");
+        $MyPlugin->progress_log->add("Install code:  {$code}");
+        $MyPlugin->progress_log->line();
+    }
 }
 
 echo $MyPlugin->progress_log->show();
-
 ?>
 
 <center>
