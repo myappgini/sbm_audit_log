@@ -1,6 +1,6 @@
 # Audit Log for AppGini
 
-## Audit log admin in AppGioni project
+## Audit log admin in AppGini project
 
 Versions 1.71
 Adjustments by Olaf Nöhring, 2021-01 (https://datenbank-projekt.de):
@@ -37,7 +37,9 @@ Only install, go to admin tools area and select Audit from plugins menu.
 ## Install
 
 go to plugin folder.
-dowload mpi ZIP pack into plugins folder in your project, and unzip it into audit folder.
+dowload audit ZIP pack into plugins folder in your project, and unzip it into audit folder.
+
+[download link](https://github.com//myappgini/sbm_audit_log/archive/main.zip)
 
 or use **git** into your plugin folder:
 
