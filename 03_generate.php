@@ -123,9 +123,9 @@ $tables = getTableList(true);
 foreach ($tables as $tn => $table) {
     $MyPlugin->progress_log->add('Table: ' . $table[0], 'text-info');
     $hook = "{$path}/hooks/{$tn}.php";
-
+//* Step 4.A
     $function = "{$tn}_init";
-    $code = "\$_SESSION ['tablenam'] = \$options->TableName; \$_SESSION ['tableID'] = \$options->PrimaryKey; \$tableID = \$_SESSION ['tableID'];";
+    $code = "\$_SESSION ['tablenam'] = \$options->TableName; \$_SESSION ['tableID'] = \$options->PrimaryKey;";
     if ($write_to_hooks) {
         $res = $MyPlugin->add_to_hook($hook, $function, $code);
         inspect_result($res, $function, $MyPlugin);
@@ -135,9 +135,9 @@ foreach ($tables as $tn => $table) {
         $MyPlugin->progress_log->add("Install code:  {$code}");
         $MyPlugin->progress_log->line();
     }
-
+//* Step 4.B
     $function = "{$tn}_after_insert";
-    $code = "table_after_change(\$_SESSION ['dbase'], \$_SESSION['tablenam'], \$memberInfo['username'], \$memberInfo['IP'], \$data['selectedID'], \$_SESSION['tableID'], 'INSERTION');";
+    $code = "table_after_change(\$_SESSION, \$memberInfo, \$data, 'INSERTION');";
     if ($write_to_hooks) {
         $res = $MyPlugin->add_to_hook($hook, $function, $code);
         inspect_result($res, $function, $MyPlugin);
@@ -146,10 +146,10 @@ foreach ($tables as $tn => $table) {
         $MyPlugin->progress_log->add("Install code:  {$code}");
         $MyPlugin->progress_log->line();
     }
-
+//* Step 4.C
     $function = "{$tn}_before_update";
     $code =
-        "table_before_change(\$_SESSION['tablenam'], \$data['selectedID'],\$_SESSION['tableID']);";
+        "table_before_change(\$_SESSION, \$data['selectedID']);";
     if ($write_to_hooks) {
         $res = $MyPlugin->add_to_hook($hook, $function, $code);
         inspect_result($res, $function, $MyPlugin);
@@ -158,9 +158,9 @@ foreach ($tables as $tn => $table) {
         $MyPlugin->progress_log->add("Install code:  {$code}");
         $MyPlugin->progress_log->line();
     }
-
+//* Step 4.D
     $function = "{$tn}_after_update";
-    $code = "table_after_change(\$_SESSION ['dbase'], \$_SESSION['tablenam'], \$memberInfo['username'], \$memberInfo['IP'], \$data['selectedID'], \$_SESSION['tableID'], 'UPDATE');";
+    $code = "table_after_change(\$_SESSION, \$memberInfo, \$data, 'UPDATE');";
     if ($write_to_hooks) {
         $res = $MyPlugin->add_to_hook($hook, $function, $code);
         inspect_result($res, $function, $MyPlugin);
@@ -169,10 +169,10 @@ foreach ($tables as $tn => $table) {
         $MyPlugin->progress_log->add("Install code:  {$code}");
         $MyPlugin->progress_log->line();
     }
-
+//* Step 4.E
     $function = "{$tn}_before_delete";
     $code =
-        "table_before_change(\$_SESSION['tablenam'], \$selectedID,\$_SESSION['tableID']);";
+        "table_before_change(\$_SESSION, \$selectedID);";
     if ($write_to_hooks) {
         $res = $MyPlugin->add_to_hook($hook, $function, $code);
         inspect_result($res, $function, $MyPlugin);
@@ -181,9 +181,9 @@ foreach ($tables as $tn => $table) {
         $MyPlugin->progress_log->add("Install code:  {$code}");
         $MyPlugin->progress_log->line();
     }
-
+//* Step 4.F
     $function = "{$tn}_after_delete";
-    $code = "table_after_change(\$_SESSION ['dbase'], \$_SESSION['tablenam'], \$memberInfo['username'], \$memberInfo['IP'], \$selectedID, \$_SESSION['tableID'], 'DELETION');";
+    $code = "table_after_change(\$_SESSION, \$memberInfo, \$data, 'DELETION');";
     if ($write_to_hooks) {
         $res = $MyPlugin->add_to_hook($hook, $function, $code);
         inspect_result($res, $function, $MyPlugin);

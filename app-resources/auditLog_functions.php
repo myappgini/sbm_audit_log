@@ -2,8 +2,8 @@
 
 /**
  * @file
- * @version 1.71
- * @author	Olaf Nöhring (https://datenbank-projekt.de), primitive_man (https://forums.appgini.com/phpbb/viewtopic.php?f=4&t=1369)
+ * @version 1.76
+ * @author	Olaf Nöhring (https://datenbank-projekt.de), primitive_man (https://forums.appgini.com/phpbb/viewtopic.php?f=4&t=1369), landinialejandro (https://forums.appgini.com/phpbb/memberlist.php?mode=viewprofile&u=8848)
  * @see 	Thread AuditLog in AppGini Forum: https://forums.appgini.com/phpbb/viewtopic.php?f=4&t=1369
  * 
  * This file contains functions for logging changed fields into the auditor table.
@@ -11,7 +11,7 @@
 */
 
 // Define the name of your auditor table once for this file:
-define("AUDITTABLENAME", 'auditor');
+define("AUDITTABLENAME", 'ecomo_auditor');
 
 
 #########################################################
@@ -136,7 +136,10 @@ function Audit_getData($action, $TableName, $currentID, $tableID){
  * @param   string    $tableID        primary key field on $TableName
  * 
  */
-function table_before_change($TableName, $currentID, $tableID){	
+// function table_before_change($TableName, $currentID, $tableID){	
+function table_before_change($session, $currentID){		
+	['tablenam' => $TableName, 'tableID' => $tableID] = $session;
+	
 	// write_log("before \n Tablename: $TableName,\n ID: $currentID,\n primarykeyfield: $tableID");
 	// pull data / write data to session var, $result holds array with current data - for which no further action is needed right now.
 	// write_log("3 do before"); 
@@ -149,7 +152,6 @@ function table_before_change($TableName, $currentID, $tableID){
 /**
  * get table data AFTER any changes, compare with 'before'-values and add to Audit log if something has changed
  * 
- * @param   string    $db_name        not needed anymore, kept for support of old versions of the auditor script
  * @param   string    $TableName      tablename
  * @param   string    $username       name of the user that did the change
  * @param   string    $userIP         IP of the user that did the change
@@ -158,7 +160,12 @@ function table_before_change($TableName, $currentID, $tableID){
  * @param   string    $type           type of change. either 'INSERTION', 'DELETION', 'UPDATE'
  * 
  */
-function table_after_change($db_name, $TableName, $username, $userIP, $currentID, $tableID, $type){
+// function table_after_change($db_name, $TableName, $username, $userIP, $currentID, $tableID, $type){
+function table_after_change ($session, $memberInfo, $data, $type) {
+	['tablenam' => $TableName, 'tableID' => $tableID] = $session;
+	['username' => $username, 'IP' => $userIP] = $memberInfo;
+	['selectedID' => $currentID] = $data;	
+
 	// write_log("after \n Tablename: $TableName,\n ID: $currentID,\n primarykeyfield: $tableID");
 
 	//if INSERT, then get all initial fieldvalues set by the user and use them as 'old'
