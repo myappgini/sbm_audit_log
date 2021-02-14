@@ -11,7 +11,7 @@
 */
 
 // Define the name of your auditor table once for this file:
-define("AUDITTABLENAME", 'ecomo_auditor');
+define("AUDITTABLENAME", 'auditor');
 
 
 #########################################################
