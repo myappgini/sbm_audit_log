@@ -72,17 +72,18 @@ $ git submodule add https://github.com/myappgini/sbm_audit_log.git audit
 ```
 
 
+
 ## Manual Installation
 
 ### Attention
 
-**Note 1**
+<a name="note1"></a>**Note 1**
 For the Search/Replace it’s recommended to use 'Notepad++' available here: [Notepad++ Home Page](https://notepad-plus-plus.org/)
 
-**Note 2**
+<a name="note2"></a>**Note 2**
 We suggest that you wait till your application is ready to go to production before making these changes - although this is NOT essential - (with the proviso that you **BACK UP YOUR FILES FIRST!**)
 
-**Note 3**
+<a name="note3"></a>**Note 3 **
 When it comes to the tedious task of doing the Search/Replace in the Hooks folder, we suggest that you copy the hook files ONLY for the tables you wish to monitor into a separate directory and then BACKUP that directory. This way, you can do it speedily using Notepad++'s Search/Replace facility 'Find in Files' and do them all in just six shots.
 
 ### Step 1. Extract the auditlog_files.zip and copy files
@@ -136,7 +137,7 @@ and replace with:
 </a>
 ```
 ### Step 4. Essential /hooks/folder-files modification
-**After you've read Note 3, above!**
+**After you've read [Note 3](#note3), above!**
 
 In the temp folder that contains the files from the hooks-folder for all the tables that you wish to monitor, make the following changes to all these files. Recommended: Do 'find in files'. Code changes/additions are color coded like this.
 - A. Do 'find in files' for: (Remember to set the correct directory!)
