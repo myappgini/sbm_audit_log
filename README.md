@@ -25,11 +25,8 @@ Adjustments by Olaf Nöhring, 2021-01 (https://datenbank-projekt.de) for v1.72:
 - Changed formatting of the docs for better readability
 - Restructured docs for plugin
 - Added hint for auditor tablename to docs
-    
-    
 
-Versions 1.71
-Adjustments by Olaf Nöhring, 2021-01 (https://datenbank-projekt.de):
+Adjustments by Olaf Nöhring, 2021-01 (https://datenbank-projekt.de) for v1.71:
 - removed bug when record is deleted (v1.71)
 - added possibility to easily define the name of your auditor table in the beginning of the the files
 auditLog_functions.php and /admin/auditLog.php
