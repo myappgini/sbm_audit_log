@@ -36,7 +36,14 @@ $folderProject = dirname(__FILE__, 2) . '/hooks'; ?>
         <div class="bs-callout bs-callout-info"> 
             <h4>Information</h4> 
             <p>
-            <?php echo $info['info']; ?>
+            <?php 
+            if ($info['info']==="more_info"){
+                echo file_get_contents(dirname(__FILE__) . "/more_info.html");
+            }else{
+                echo $info['info']; 
+            }
+            
+            ?>
             </p> 
             <p>
             <?php echo $info['Author']; ?>
