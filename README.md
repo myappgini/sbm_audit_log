@@ -2,6 +2,11 @@
 
 ## Audit log admin in AppGini project
 
+Adjustments by Olaf Nöhring, 2021-02 (https://datenbank-projekt.de) for v1.77:
+- corrected manual installation table_after_change call, using $selectedID instead of $data (which does not exist at this point)
+- adjusted function table_after_change to accept $selectedID as direct variable (not array)
+- corrected error when inserting a new record and calling table_before_change to document all values
+
 Adjustments by Olaf Nöhring, 2021-02 (https://datenbank-projekt.de) for v1.76:
 - Fixed and updated manual installation _init code
 - added AppGini Code for Auditor table for easy, quick and correct creation of the auditor table in your AppGini application.

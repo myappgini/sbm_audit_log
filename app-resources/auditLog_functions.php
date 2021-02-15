@@ -2,7 +2,7 @@
 
 /**
  * @file
- * @version 1.76
+ * @version 1.77
  * @author	Olaf Nöhring (https://datenbank-projekt.de), primitive_man (https://forums.appgini.com/phpbb/viewtopic.php?f=4&t=1369), landinialejandro (https://forums.appgini.com/phpbb/memberlist.php?mode=viewprofile&u=8848)
  * @see 	Thread AuditLog in AppGini Forum: https://forums.appgini.com/phpbb/viewtopic.php?f=4&t=1369
  * 
@@ -131,12 +131,10 @@ function Audit_getData($action, $TableName, $currentID, $tableID){
 /**
  * get table data BEFORE any changes
  * 
- * @param   string    $TableName      tablename
+ * @param   string    $session      $_SESSION with tablenam and tableID
  * @param   string    $currentID      primary key value of the current record
- * @param   string    $tableID        primary key field on $TableName
  * 
  */
-// function table_before_change($TableName, $currentID, $tableID){	
 function table_before_change($session, $currentID){		
 	['tablenam' => $TableName, 'tableID' => $tableID] = $session;
 	
@@ -152,25 +150,26 @@ function table_before_change($session, $currentID){
 /**
  * get table data AFTER any changes, compare with 'before'-values and add to Audit log if something has changed
  * 
- * @param   string    $TableName      tablename
- * @param   string    $username       name of the user that did the change
- * @param   string    $userIP         IP of the user that did the change
- * @param   string    $currentID      primary key value of the current record
- * @param   string    $tableID        primary key field on $TableName
- * @param   string    $type           type of change. either 'INSERTION', 'DELETION', 'UPDATE'
+ * @param   string    $session      $_SESSION with tablenam and tableID
+ * @param   string    $memberInfo   array with username and userIP
+ * @param   string    $data      	array with currentID
+ * @param   string    $type         type of change. either 'INSERTION', 'DELETION', 'UPDATE'
  * 
  */
-// function table_after_change($db_name, $TableName, $username, $userIP, $currentID, $tableID, $type){
 function table_after_change ($session, $memberInfo, $data, $type) {
 	['tablenam' => $TableName, 'tableID' => $tableID] = $session;
 	['username' => $username, 'IP' => $userIP] = $memberInfo;
-	['selectedID' => $currentID] = $data;	
+	if (is_array($data)){
+		['selectedID' => $currentID] = $data;	
+	} else {
+		$currentID = $data;
+	}
 
 	// write_log("after \n Tablename: $TableName,\n ID: $currentID,\n primarykeyfield: $tableID");
 
 	//if INSERT, then get all initial fieldvalues set by the user and use them as 'old'
 	if ($type == 'INSERTION') {
-		table_before_change($TableName, $currentID, $tableID);
+		table_before_change($session, $currentID);
 	}
 
 	if ($type != 'DELETION') {

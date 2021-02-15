@@ -148,8 +148,7 @@ foreach ($tables as $tn => $table) {
     }
 //* Step 4.C
     $function = "{$tn}_before_update";
-    $code =
-        "table_before_change(\$_SESSION, \$data['selectedID']);";
+    $code = "table_before_change(\$_SESSION, \$data['selectedID']);";
     if ($write_to_hooks) {
         $res = $MyPlugin->add_to_hook($hook, $function, $code);
         inspect_result($res, $function, $MyPlugin);
@@ -171,8 +170,7 @@ foreach ($tables as $tn => $table) {
     }
 //* Step 4.E
     $function = "{$tn}_before_delete";
-    $code =
-        "table_before_change(\$_SESSION, \$selectedID);";
+    $code = "table_before_change(\$_SESSION, \$selectedID);";
     if ($write_to_hooks) {
         $res = $MyPlugin->add_to_hook($hook, $function, $code);
         inspect_result($res, $function, $MyPlugin);
@@ -183,7 +181,7 @@ foreach ($tables as $tn => $table) {
     }
 //* Step 4.F
     $function = "{$tn}_after_delete";
-    $code = "table_after_change(\$_SESSION, \$memberInfo, \$data, 'DELETION');";
+    $code = "table_after_change(\$_SESSION, \$memberInfo, \$selectedID, 'DELETION');";
     if ($write_to_hooks) {
         $res = $MyPlugin->add_to_hook($hook, $function, $code);
         inspect_result($res, $function, $MyPlugin);
