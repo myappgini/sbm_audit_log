@@ -71,6 +71,139 @@ if you already use git in ypur project add like submodule
 $ git submodule add https://github.com/myappgini/sbm_audit_log.git audit
 ```
 
+
+## Manual Installation
+
+### Attention
+
+**Note 1**
+For the Search/Replace it’s recommended to use 'Notepad++' available here: [Notepad++ Home Page](https://notepad-plus-plus.org/)
+
+**Note 2**
+We suggest that you wait till your application is ready to go to production before making these changes - although this is NOT essential - (with the proviso that you **BACK UP YOUR FILES FIRST!**)
+
+**Note 3**
+When it comes to the tedious task of doing the Search/Replace in the Hooks folder, we suggest that you copy the hook files ONLY for the tables you wish to monitor into a separate directory and then BACKUP that directory. This way, you can do it speedily using Notepad++'s Search/Replace facility 'Find in Files' and do them all in just six shots.
+
+### Step 1. Extract the auditlog_files.zip and copy files
+The zip file contain only 2 files:
+- `auditLog_functions.php` : The functions that allow the audit log to work. Copy this into the /hooks folder of your application
+-  `auditLog.php` : A table (filterable and pageable) that will be added to the Admin Menu Options. Copy this into the /admin folder of your application.
+
+### Step 2. Create the Audit Log Table using the audit_tableSQL.sql file provided.
+You may want to adjust the auditor tablename before. See above: Custom table name for the auditor table.
+Then just run the SQL with your favorite tool (https://www.phpmyadmin.net, https://www.adminer.org).
+
+### Step 3. Essential File Modifications
+- 3.1 Include audit-base files: 'application_root/config.php'
+Add the following to the bottom of the file.
+```php
+    if (session_status() == PHP_SESSION_NONE) { session_start(); }	
+    $_SESSION['dbase'] = $dbDatabase;
+    if (!function_exists('table_before_change')) {	
+    	$currDir = dirname(__FILE__);		
+    	@require("$currDir/hooks/auditLog_functions.php");
+    };
+```
+- 3.2 Add page to the Admin Menu Options: 'admin/incHeader.php'
+Trick (as pictured and described in Advanced Audit Log Table (recommended), above):
+If you create a table in AppGini with the name as the Auditor table (i.e. Auditor) and the same fields (case sensitive) as the in the Auditor table, you can build a regular Audit-Table button from AppGini and let user access that with the regular permissions.
+Maybe you want to make sure, that noone can change anything in that table.
+If you to this, you do not need to make changes in 'admin/incHeader.php' as described now (and thus Auditor will stay in your application even when regenerated.
+
+Do find for:
+```html
+<a class="navbar-brand" href="pageHome.php">
+	<span class="text-warning">
+		<i class="glyphicon glyphicon-wrench"></i> 
+		Admin Area
+	</span>
+</a>
+```
+and replace with:
+```html
+<a class="navbar-brand" href="pageHome.php">
+	<span class="text-warning">
+		<i class="glyphicon glyphicon-wrench"></i> 
+		Admin Area
+	</span>
+</a>
+<a class="navbar-brand" href="auditLog.php">
+	<span class="text-warning-1">
+		<i class="glyphicon glyphicon-tasks"></i>
+		Audit Log
+	</span>
+</a>
+```
+### Step 4. Essential /hooks/folder-files modification
+**After you've read Note 3, above!**
+
+In the temp folder that contains the files from the hooks-folder for all the tables that you wish to monitor, make the following changes to all these files. Recommended: Do 'find in files'. Code changes/additions are color coded like this.
+- A. Do 'find in files' for: (Remember to set the correct directory!)
+
+```init(&$options, $memberInfo, &$args){```
+
+and replace with:
+``` 
+init(&$options, $memberInfo, &$args){
+$_SESSION ['tablenam'] = $options->TableName;
+$_SESSION ['tableID'] = $options->PrimaryKey;
+```
+- B. Do 'find in files' for:
+
+```after_insert($data, $memberInfo, &$args){```
+
+and replace with:
+```
+after_insert($data, $memberInfo, &$args){
+table_after_change ($_SESSION, $memberInfo, $data, 'INSERTION');
+```
+
+- C. Do 'find in files' for:
+
+```before_update(&$data, $memberInfo, &$args){```
+
+and replace with:
+```
+before_update(&$data, $memberInfo, &$args){
+table_before_change($_SESSION, $data['selectedID']);
+```
+
+- D. Do 'find in files' for:
+
+```after_update($data, $memberInfo, &$args){```
+
+and replace with:
+```
+after_update($data, $memberInfo, &$args){
+table_after_change ($_SESSION, $memberInfo, $data, 'UPDATE');
+```
+
+- E. Do 'find in files' for:
+
+```before_delete($selectedID, &$skipChecks, $memberInfo, &$args){```
+
+and replace with:
+```
+before_delete($selectedID, &$skipChecks, $memberInfo, &$args){
+table_before_change($_SESSION, $selectedID);
+```
+
+- F. Do 'find in files' for:
+
+```after_delete($selectedID, $memberInfo, &$args){```
+
+and replace with:
+```
+after_delete($selectedID, $memberInfo, &$args){
+table_after_change ($_SESSION, $memberInfo, $selectedID, 'DELETION');
+```
+
+Remember to copy the files from the temp directory created in Note 3 back to the original Hooks folder!
+
+AuditLog should now be working! Using this technique will allow you to keep other modifications made to the Hooks folder.
+
+
 ## Use
 
 Select Audit from plugin menu in admin area.
