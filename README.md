@@ -2,6 +2,27 @@
 
 ## Audit log admin in AppGini project
 
+Adjustments by Olaf Nöhring, 2021-02 (https://datenbank-projekt.de) for v1.76:
+- Fixed and updated manual installation _init code
+- added AppGini Code for Auditor table for easy, quick and correct creation of the auditor table in your AppGini application.
+- cooperation with landinialejandro to make code cleaner for use in installation plugin
+    
+Adjustments by Olaf Nöhring, 2021-01 (https://datenbank-projekt.de) for v1.74:
+- Added example screenshots of Audit Log view to docs
+- Added hint how to deal with the need for exact position of audit-log calls
+    
+Adjustments by Olaf Nöhring, 2021-01 (https://datenbank-projekt.de) for v1.73:
+- Adjusted docs for more clarity
+    
+Adjustments by Olaf Nöhring, 2021-01 (https://datenbank-projekt.de) for v1.72:
+- Added link to docs for the wonderful plugin extension from landinialejandro which installation a walk in the park. Please see below
+- Modified file structure of the zip files that holds the audit log to adjust for use in combination with the plugin.
+- Changed formatting of the docs for better readability
+- Restructured docs for plugin
+- Added hint for auditor tablename to docs
+    
+    
+
 Versions 1.71
 Adjustments by Olaf Nöhring, 2021-01 (https://datenbank-projekt.de):
 - removed bug when record is deleted (v1.71)
