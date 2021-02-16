@@ -8,7 +8,10 @@ include dirname(__FILE__) . '/../plugins-resources/loader.php';
 
 class LandiniPlugin extends AppGiniPlugin
 {
-    public $title, $name, $logo, $errors;
+    public $title;
+    public $name;
+    public $logo;
+    public $errors;
     /* add any plugin-specific properties here */
 
     public function __construct($config = [])
@@ -135,5 +138,48 @@ class LandiniPlugin extends AppGiniPlugin
             $this->progress_log->ok();
         }
         return true;
+    }
+
+    public function check_if_exist_code($hook_file_path, $hook_function=false, $code)
+    {
+        /* Check if hook file exists and is writable */
+        $hook_code = @file_get_contents($hook_file_path);
+        if (!$hook_code) {
+            return $this->error('check_hook', 'Unable to access hook file');
+        }
+        
+        if ($hook_function){
+
+            /* Find hook function */
+            preg_match('/function\s+' . $hook_function . '\s*\(/i', $hook_code, $matches, PREG_OFFSET_CAPTURE);
+            if (count($matches) != 1) {
+                return $this->error('check_hook', 'Could not determine correct function location');
+            }
+
+            /* start position of hook function */
+            $hf_position = $matches[0][1];
+                    
+            /* position of next function, or EOF position if this is the last function in the file */
+            $nf_position = strlen($hook_code);
+            preg_match('/function\s+[a-z0-9_]+\s*\(/i', $hook_code, $matches, PREG_OFFSET_CAPTURE, $hf_position + 10);
+            if (count($matches)) {
+                $nf_position = $matches[0][1];
+            }
+            $old_function_code = substr($hook_code, $hf_position, $nf_position - $hf_position);
+        }else{
+            
+            $old_function_code = substr($hook_code, 0);
+        }
+            
+                
+        /* hook function code */
+            
+        /* Checks $code is not already in there */
+        if (strpos($old_function_code, $code) !== false) {
+            $this->error('check_hook', 'Code already exists');
+            return true;
+        }else{
+            return false;
+        }
     }
 }
