@@ -105,9 +105,18 @@ $MyPlugin->progress_log->add('Adding code to hooks', 'text-info');
 $MyPlugin->progress_log->add('File: __global.php');
 $code = "<?php include('audit/scripts.php');?>";
 $file_path = $path . '/hooks/__global.php';
+
 if ($write_to_hooks) {
-    $res = $MyPlugin->add_to_file($file_path, false, $code);
-    inspect_result($res, $file_path, $MyPlugin);
+    $check="include('audit/scripts.php')";
+        
+    $chk_A = $MyPlugin->check_if_exist_code($file_path, false, $code);
+    $chk_B = $MyPlugin->check_if_exist_code($file_path, false, $check);
+    if (!($chk_A === $chk_B)) {
+        $MyPlugin->progress_log->add("Error adding code into file : {$file_path}.<br>The code or part of code ({$check}) exist in this file, please delete before continue", 'text-danger');
+    } else {
+        $res = $MyPlugin->add_to_file($file_path, false, $code);
+        inspect_result($res, $file_path, $MyPlugin);
+    }
 } else {
     $code = "include('audit/scripts.php');";
     $MyPlugin->progress_log->add("File: {$file_path}");
@@ -123,72 +132,59 @@ $tables = getTableList(true);
 foreach ($tables as $tn => $table) {
     $MyPlugin->progress_log->add('Table: ' . $table[0], 'text-info');
     $hook = "{$path}/hooks/{$tn}.php";
-//* Step 4.A
+
+    //* Step 4.A
     $function = "{$tn}_init";
     $code = "\$_SESSION ['tablenam'] = \$options->TableName; \$_SESSION ['tableID'] = \$options->PrimaryKey;";
-    if ($write_to_hooks) {
-        $res = $MyPlugin->add_to_hook($hook, $function, $code);
-        inspect_result($res, $function, $MyPlugin);
-    } else {
-        $MyPlugin->progress_log->add("File: {$hook}", 'text-info');
-        $MyPlugin->progress_log->add("Hook function: {$function}");
-        $MyPlugin->progress_log->add("Install code:  {$code}");
-        $MyPlugin->progress_log->line();
+    $check=["\$_SESSION ['tablenam'] = \$options->TableName","\$_SESSION ['tableID'] = \$options->PrimaryKey"];
+    $res = hooks_code($hook, $function, $code, $MyPlugin, $write_to_hooks, $check);
+    if (!$res) {
+        break;
     }
-//* Step 4.B
+
+    //* Step 4.B
     $function = "{$tn}_after_insert";
     $code = "table_after_change(\$_SESSION, \$memberInfo, \$data, 'INSERTION');";
-    if ($write_to_hooks) {
-        $res = $MyPlugin->add_to_hook($hook, $function, $code);
-        inspect_result($res, $function, $MyPlugin);
-    } else {
-        $MyPlugin->progress_log->add("Hook function: {$function}");
-        $MyPlugin->progress_log->add("Install code:  {$code}");
-        $MyPlugin->progress_log->line();
+    $check ="table_after_change";
+    $res = hooks_code($hook, $function, $code, $MyPlugin, $write_to_hooks, $check);
+    if (!$res) {
+        break;
     }
-//* Step 4.C
+
+    //* Step 4.C
     $function = "{$tn}_before_update";
     $code = "table_before_change(\$_SESSION, \$data['selectedID']);";
-    if ($write_to_hooks) {
-        $res = $MyPlugin->add_to_hook($hook, $function, $code);
-        inspect_result($res, $function, $MyPlugin);
-    } else {
-        $MyPlugin->progress_log->add("Hook function: {$function}");
-        $MyPlugin->progress_log->add("Install code:  {$code}");
-        $MyPlugin->progress_log->line();
+    $check ="table_before_change";
+    $res = hooks_code($hook, $function, $code, $MyPlugin, $write_to_hooks, $check);
+    if (!$res) {
+        break;
     }
-//* Step 4.D
+
+    //* Step 4.D
     $function = "{$tn}_after_update";
     $code = "table_after_change(\$_SESSION, \$memberInfo, \$data, 'UPDATE');";
-    if ($write_to_hooks) {
-        $res = $MyPlugin->add_to_hook($hook, $function, $code);
-        inspect_result($res, $function, $MyPlugin);
-    } else {
-        $MyPlugin->progress_log->add("Hook function: {$function}");
-        $MyPlugin->progress_log->add("Install code:  {$code}");
-        $MyPlugin->progress_log->line();
+    $check ="table_after_change";
+    $res = hooks_code($hook, $function, $code, $MyPlugin, $write_to_hooks, $check);
+    if (!$res) {
+        break;
     }
-//* Step 4.E
+
+    //* Step 4.E
     $function = "{$tn}_before_delete";
     $code = "table_before_change(\$_SESSION, \$selectedID);";
-    if ($write_to_hooks) {
-        $res = $MyPlugin->add_to_hook($hook, $function, $code);
-        inspect_result($res, $function, $MyPlugin);
-    } else {
-        $MyPlugin->progress_log->add("Hook function: {$function}");
-        $MyPlugin->progress_log->add("Install code:  {$code}");
-        $MyPlugin->progress_log->line();
+    $check ="table_before_change";
+    $res = hooks_code($hook, $function, $code, $MyPlugin, $write_to_hooks, $check);
+    if (!$res) {
+        break;
     }
-//* Step 4.F
+
+    //* Step 4.F
     $function = "{$tn}_after_delete";
     $code = "table_after_change(\$_SESSION, \$memberInfo, \$selectedID, 'DELETION');";
-    if ($write_to_hooks) {
-        $res = $MyPlugin->add_to_hook($hook, $function, $code);
-        inspect_result($res, $function, $MyPlugin);
-    } else {
-        $MyPlugin->progress_log->add("Hook function: {$function}");
-        $MyPlugin->progress_log->add("Install code:  {$code}");
-        $MyPlugin->progress_log->line();
+    $check ="table_after_change";
+    $res = hooks_code($hook, $function, $code, $MyPlugin, $write_to_hooks, $check);
+    if (!$res) {
+        break;
     }
 }
 
@@ -239,5 +235,30 @@ function inspect_result($res, $file_path, &$MyPlugin)
     }
 }
 
-
+function hooks_code($hook, $function, $code, &$MyPlugin, $write_to_hooks=true, $check=false)
+{
+    if ($write_to_hooks) {
+        if ($check) {
+            if (!is_array($check)) {
+                $check=[$check];
+            }
+            foreach ($check as $value) {
+                $chk_A = $MyPlugin->check_if_exist_code($hook, $function, $code);
+                $chk_B = $MyPlugin->check_if_exist_code($hook, $function, $value);
+                if (!($chk_A === $chk_B)) {
+                    $MyPlugin->progress_log->add("Error on hook file : {$hook}.<br>The code or part of code exist in function <strong>{$function}</strong>.<br>Please delete the calling <strong>{$value}</strong> before continue", 'text-danger');
+                    return false;
+                }
+            }
+        }
+        $res = $MyPlugin->add_to_hook($hook, $function, $code);
+        inspect_result($res, $function, $MyPlugin);
+    } else {
+        $MyPlugin->progress_log->add("File: {$hook}", 'text-info');
+        $MyPlugin->progress_log->add("Hook function: {$function}");
+        $MyPlugin->progress_log->add("Install code:  {$code}");
+        $MyPlugin->progress_log->line();
+    }
+    return true;
+}
 ?>
