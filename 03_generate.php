@@ -72,10 +72,10 @@ $dest = $path . '/admin/auditLogTimeLine.php';
 $MyPlugin->my_copy_file($source, $dest, true);
 
 //hooks dest resources
-$source = dirname(__FILE__) . '/app-resources/auditLog_functions.php';
+$source = dirname(__FILE__) . '/app-resources/hooks/auditLog_functions.php';
 $dest = $path . '/hooks/audit/auditLog_functions.php';
 $MyPlugin->my_copy_file($source, $dest, true);
-$source = dirname(__FILE__) . '/app-resources/auditLog_timeline.php';
+$source = dirname(__FILE__) . '/app-resources/hooks/auditLog_timeline.php';
 $dest = $path . '/hooks/audit/auditLog_timeline.php';
 $MyPlugin->my_copy_file($source, $dest, true);
 
