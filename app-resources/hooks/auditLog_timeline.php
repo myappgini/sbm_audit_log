@@ -538,7 +538,7 @@ if ($state_table != '') {
             $sql_pk = "SHOW COLUMNS FROM `" . $state_table . "`;";
             $result_pk = sql($sql_pk, $eo);
             while($row_pk = db_fetch_assoc($result_pk)){
-                write_log($row_pk['Field'] . ' : ' . $row_pk['Key']);
+                // write_log($row_pk['Field'] . ' : ' . $row_pk['Key']);
                 if ($row_pk['Key'] == 'PRI'){
                     $pk_column = $row_pk['Field'];                    
                     break;
