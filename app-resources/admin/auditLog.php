@@ -10,9 +10,9 @@
 	include("$currDir/incHeader.php");
 	
 	if (isset($_SESSION ['auditLogBackup'])){
-	$thisMessage = "Log File Backed Up";
-	echo "<script type='text/javascript'>alert('$thisMessage');</script>";
-	unset($_SESSION['auditLogBackup']);
+		$thisMessage = "Log File Backed Up";
+		echo "<script type='text/javascript'>alert('$thisMessage');</script>";
+		unset($_SESSION['auditLogBackup']);
 	}
 
 
@@ -25,14 +25,16 @@
 		$noResults=FALSE;
 	}
 
+	$recperpage = isset($_GET['recperpage']) ? makeSafe($_GET['recperpage']) : $adminConfig['recordsPerPage'];
+
 	$page=intval($_GET['page']);
 	if($page<1){
 		$page=1;
-	}elseif($page>ceil($numMembers/$adminConfig['recordsPerPage']) && !$noResults){
-		redirect("admin/auditLog.php?page=".ceil($numMembers/$adminConfig['recordsPerPage']));
+	}elseif($page>ceil($numMembers/$recperpage) && !$noResults){
+		redirect("admin/auditLog.php?page=".ceil($numMembers/$recperpage));
 	}
 
-	$start=($page-1)*$adminConfig['recordsPerPage'];
+	$start=($page-1)*$recperpage;
 
 ?>
 
@@ -83,38 +85,44 @@ tfoot tr:hover {
 }
 
 </style>
+
 <section class="container">
 <div class="page-header"><h1>Audit Log</h1>
-
+<p><span class="btn-warning">It's strongly recommended to follow the Auditor documentation and create an AppGini <em>table</em> which provides <strong>much</strong> better access to the log data!</span></p>
+<form action="<?php echo $_SERVER["PHP_SELF"]; ?>" method="get">
+	<label for="recperpage">Records per page: </label>
+	<input id="recperpage" name="recperpage" type ="text" value="<?php echo $recperpage; ?>">
+</form>
 </div>
-<input type="search" class="light-table-filter" data-table="order-table" placeholder="Type Here to Filter Data">
+
+<input type="search" class="light-table-filter" data-table="order-table" placeholder="Type Here to filter the data you currently see">
 <table class="table table-striped order-table" width="100%" cellspacing="0" id="t01">
 <thead>
 	<tr>
-				<b>
-				<th>ID</th>
-				<th>User Name</th>
-				<th>IP Address</th> 
-				<th>TimeStamp</th>
-				<th>Change Type</th>
-				<th>Table</th> 
-				<th>Field</th>
-				<th>Previous Value</th> 
-				<th>New Value</th>
-				</b>
+	<th>ID</th>
+	<th>RES_ID (PK)</th>
+	<th>User Name</th>
+	<th>IP Address</th> 
+	<th>TimeStamp</th>
+	<th>Change Type</th>
+	<th>Table</th> 
+	<th>Field</th>
+	<th>Previous Value</th> 
+	<th>New Value</th>
 	</tr>
 </thead>
 <tbody>
 <?php
 
 	
-	$res=sql("SELECT `username`,`ipaddr`, `time_stmp`, `change_type`, `table_name`, `fieldName`, `OldValue`, `NewValue`, `id` FROM `" . AUDITTABLENAME . "` order by `time_stmp` desc limit $start, ".$adminConfig['recordsPerPage'], $eo);
+	$res=sql("SELECT `username`,`ipaddr`, `time_stmp`, `change_type`, `table_name`, `fieldName`, `OldValue`, `NewValue`, `id`, `res_id`  FROM `" . AUDITTABLENAME . "` order by `time_stmp` desc limit $start, ".$recperpage, $eo);
 	
 	
 	while($row=db_fetch_row($res))	{
 ?>
 		<tr>
 				<td class="tdCaptionCell"><?php echo $row[8]; ?></td>
+				<td class="tdCaptionCell"><?php echo $row[9]; ?></td>
 				<td class="tdCaptionCell"><?php echo $row[0]; ?></td>
 				<td class="tdCaptionCell"><?php echo $row[1]; ?></td>
 				<td class="tdCaptionCell"><?php echo date('d/m/Y H:i:s',strtotime($row[2])); ?></td>
@@ -131,36 +139,22 @@ tfoot tr:hover {
 <tfoot>
 <tr>
 				<td align="left" class="tdFooter">
-					<input type="button" onClick="window.location='auditLog.php?searchMembers=<?php echo $searchHTML; ?>&groupID=<?php echo $groupID; ?>&status=<?php echo $status; ?>&searchField=<?php echo $searchField; ?>&page=<?php echo ($page>1 ? $page-1 : 1); ?>';" value="Previous">
+					<input type="button" onClick="window.location='auditLog.php?recperpage=<?php echo $recperpage; ?>&searchMembers=<?php echo $searchHTML; ?>&groupID=<?php echo $groupID; ?>&status=<?php echo $status; ?>&searchField=<?php echo $searchField; ?>&page=<?php echo ($page>1 ? $page-1 : 1); ?>';" value="Previous">
 				</td>
 				<td align="center" class="tdFooter">
 					
 				</td>
-				<td align="center" class="tdFooter">
+				<td align="center" class="tdFooter" colspan=7>
 					<?php echo "<b>Displaying Audit Log Records ".($start+1)." to ".($start+db_num_rows($res))." of $numMembers</b>"; ?>
 				</td>
-					<td align="center" class="tdFooter">
-					
-				</td>
-					<td align="center" class="tdFooter">
-					
-				</td>
-					<td align="center" class="tdFooter">
-					
-				</td>
-					<td align="center" class="tdFooter">
-					
-				</td>
-					<td align="center" class="tdFooter">
-					
-				</td>
 				<td align="right" class="tdFooter">
-					<input type="button" onClick="window.location='auditLog.php?searchMembers=<?php echo $searchHTML; ?>&groupID=<?php echo $groupID; ?>&status=<?php echo $status; ?>&searchField=<?php echo $searchField; ?>&page=<?php echo ($page<ceil($numMembers/$adminConfig['membersPerPage']) ? $page+1 : ceil($numMembers/$adminConfig['membersPerPage'])); ?>';" value="Next">
+					<input type="button" onClick="window.location='auditLog.php?recperpage=<?php echo $recperpage; ?>&searchMembers=<?php echo $searchHTML; ?>&groupID=<?php echo $groupID; ?>&status=<?php echo $status; ?>&searchField=<?php echo $searchField; ?>&page=<?php echo ($page<ceil($numMembers/$adminConfig['membersPerPage']) ? $page+1 : ceil($numMembers/$adminConfig['membersPerPage'])); ?>';" value="Next">
 				</td>
 </tr>		
 </tfoot>
 </table>
 </section>
+
 
 <script type="text/javascript">
 (function(document) {

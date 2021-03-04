@@ -2,7 +2,7 @@
 
 /**
  * @file
- * @version 1.77
+ * @version 1.81
  * @author	Olaf Nöhring (https://datenbank-projekt.de), primitive_man (https://forums.appgini.com/phpbb/viewtopic.php?f=4&t=1369), landinialejandro (https://forums.appgini.com/phpbb/memberlist.php?mode=viewprofile&u=8848)
  * @see 	Thread AuditLog in AppGini Forum: https://forums.appgini.com/phpbb/viewtopic.php?f=4&t=1369
  * 
@@ -18,6 +18,24 @@ define("AUDITTABLENAME", 'auditor');
 ############### AUDIT LOG FUNCTIONS #####################
 #########################################################
 if (session_status() == PHP_SESSION_NONE) { session_start(); }
+
+
+/**
+ * 
+ * Applies AppGini's makeSafe function to all entries of $data, 
+ * where $data can be an array, OR a string variable
+ * src: https://forums.appgini.com/phpbb/viewtopic.php?f=2&t=4203&p=16537#p16535
+ *
+ * @param  $data	variable, can be either string OR array
+ * @param  bool $is_gpc
+ * @return cleaned variable
+ *
+ */
+function Audit_makeSafe_custom($data, $is_gpc = true) {
+    return is_array($data) ? array_map(function ($entry) use ($is_gpc) {
+        return makeSafe($entry, $is_gpc);
+    }, $data) : makeSafe($data, $is_gpc);
+}
 
 /**
 	* Manual add to Auditor-Table (and/or save old value to session variable)
@@ -54,6 +72,16 @@ if (session_status() == PHP_SESSION_NONE) { session_start(); }
 function Audit_Manually($actionType = 'unknown', $TableName = '', $pkFieldName = '', $pkFieldValue = 0, $fieldName = '', $NewValue = 0, $OldValue = 0){
 	//DEBUG
 	// write_log("actionType: " . $actionType . "\n TableName: " . $TableName . "\n pkFieldName: " . $pkFieldName . "\n pkFieldValue: " . $pkFieldValue . "\n fieldName: " . $fieldName . " \n NewValue: " . $NewValue ." \n OldValue: ", $OldValue);
+
+	// make sure data can not damage our database
+	$actionType = Audit_makeSafe_custom($actionType);
+	$TableName = Audit_makeSafe_custom($TableName);
+	$pkFieldName = Audit_makeSafe_custom($pkFieldName);
+	$pkFieldValue = Audit_makeSafe_custom($pkFieldValue);
+	$fieldName = Audit_makeSafe_custom($fieldName);
+	$NewValue = Audit_makeSafe_custom($NewValue);
+	$OldValue = Audit_makeSafe_custom($OldValue);
+
 
 	if ($actionType == 'SAVEOLD'){
 		$sql = "SELECT `$TableName`.`$fieldName` FROM `$TableName` WHERE `$pkFieldName` = '$pkFieldValue';";
@@ -93,7 +121,7 @@ function Audit_Manually($actionType = 'unknown', $TableName = '', $pkFieldName =
 		if ($doAction == 1){
 			$memberInfo = getMemberInfo();
 			$timeStamp = date('Y-m-d H:i:s');
-			$sqlInsert = "INSERT INTO " . AUDITTABLENAME . " (res_id, username, ipaddr, time_stmp, change_type, table_name, fieldName, OldValue, NewValue) VALUES ('" . $pkFieldValue . "', '" . $memberInfo['username'] . "', '" . $memberInfo['IP'] . "','" . $timeStamp. "','" .  $actionType. "','" .  $TableName. "','" .  $fieldName. "','" .  $OldValue . "','" . $NewValue ."')";
+			$sqlInsert = "INSERT INTO " . AUDITTABLENAME . " (res_id, username, ipaddr, time_stmp, change_type, table_name, fieldName, OldValue, NewValue) VALUES ('" . $pkFieldValue . "', '" . $memberInfo['username'] . "', '" . $memberInfo['IP'] . "','" . $timeStamp. "','" .  $actionType. "','" .  $TableName. "','" .  $fieldName. "','" .  makeSafe($OldValue) . "','" . makeSafe($NewValue) ."')";	// clean OldValue and NewValue again, as they might have changed
 		 	$result = sqlValueC($sqlInsert); 
 			// write_log("Audit_Manually (result: $result): " . $sqlInsert);
 			set_record_owner(AUDITTABLENAME, $pkFieldValue, $memberInfo['username']); // Set/update the owner of given record		
@@ -114,6 +142,8 @@ function Audit_Manually($actionType = 'unknown', $TableName = '', $pkFieldName =
  * 
  */
 function Audit_getData($action, $TableName, $currentID, $tableID){
+	//data comes in clean!
+
 	// as suggested by pbötcher https://forums.appgini.com/phpbb/viewtopic.php?f=4&t=1369&p=10395#p10392
 	$fields = get_sql_fields($TableName);
 	$from = get_sql_from($TableName);
@@ -136,6 +166,11 @@ function Audit_getData($action, $TableName, $currentID, $tableID){
  * 
  */
 function table_before_change($session, $currentID){		
+	
+	// make sure variables can not damage our database
+	$session = Audit_makeSafe_custom($session);
+	$currentID = Audit_makeSafe_custom($currentID);
+
 	['tablenam' => $TableName, 'tableID' => $tableID] = $session;
 	
 	// write_log("before \n Tablename: $TableName,\n ID: $currentID,\n primarykeyfield: $tableID");
@@ -157,6 +192,13 @@ function table_before_change($session, $currentID){
  * 
  */
 function table_after_change ($session, $memberInfo, $data, $type) {
+
+	// make sure variables can not damage our database
+	$session = Audit_makeSafe_custom($session);
+	$memberInfo = Audit_makeSafe_custom($memberInfo);
+	$data = Audit_makeSafe_custom($data);
+	$type = Audit_makeSafe_custom($type);
+	
 	['tablenam' => $TableName, 'tableID' => $tableID] = $session;
 	['username' => $username, 'IP' => $userIP] = $memberInfo;
 	if (is_array($data)){
@@ -225,7 +267,7 @@ function table_after_change ($session, $memberInfo, $data, $type) {
 					// END of exclusion examples
 
 				default:
-					sql("INSERT INTO " . AUDITTABLENAME . " (res_id, username, ipaddr, time_stmp, change_type, table_name, fieldName, OldValue, NewValue) VALUES ('$currentID', '$username','$userIP',NOW(),'$type','$TableName','$colname','$oldValue','$newValue')", $eo);
+					sql("INSERT INTO " . AUDITTABLENAME . " (res_id, username, ipaddr, time_stmp, change_type, table_name, fieldName, OldValue, NewValue) VALUES ('$currentID', '$username','$userIP',NOW(),'$type','$TableName','$colname','" . makeSafe($oldValue) . "','" . makeSafe($newValue) . "')", $eo);	// clean OldValue and NewValue again, as they might have changed
 					set_record_owner(AUDITTABLENAME, $currentID, $username); // Set/update the owner of given record
 					break;
 			}
