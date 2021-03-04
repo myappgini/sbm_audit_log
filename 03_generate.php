@@ -63,13 +63,22 @@ $MyPlugin->progress_log->add("Output folder: $path", 'text-info');
 $MyPlugin->progress_log->ok();
 $MyPlugin->progress_log->line();
 
-$source = dirname(__FILE__) . '/app-resources/auditLog.php';
+//admin dest resources
+$source = dirname(__FILE__) . '/app-resources/admin/auditLog.php';
 $dest = $path . '/admin/auditLog.php';
 $MyPlugin->my_copy_file($source, $dest, true);
+$source = dirname(__FILE__) . '/app-resources/admin/auditLogTimeLine.php';
+$dest = $path . '/admin/auditLogTimeLine.php';
+$MyPlugin->my_copy_file($source, $dest, true);
 
+//hooks dest resources
 $source = dirname(__FILE__) . '/app-resources/auditLog_functions.php';
 $dest = $path . '/hooks/audit/auditLog_functions.php';
 $MyPlugin->my_copy_file($source, $dest, true);
+$source = dirname(__FILE__) . '/app-resources/auditLog_timeline.php';
+$dest = $path . '/hooks/audit/auditLog_timeline.php';
+$MyPlugin->my_copy_file($source, $dest, true);
+
 
 $source = dirname(__FILE__) . '/app-resources/button.js';
 $dest = $path . '/hooks/audit/button.js';
@@ -96,7 +105,7 @@ if ($sql) {
             'text-danger spacer'
         );
     } else {
-        $MyPlugin->progress_log->add('Audit table created');
+        $MyPlugin->progress_log->add('Audit table ready');
     }
 }
 
@@ -125,8 +134,7 @@ if ($write_to_hooks) {
     $MyPlugin->progress_log->line();
 }
 
-if ($write_to_hooks) {
-}
+// write to hooks files
 
 $tables = getTableList(true);
 foreach ($tables as $tn => $table) {
