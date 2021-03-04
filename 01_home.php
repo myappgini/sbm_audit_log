@@ -25,7 +25,7 @@ $folderProject = dirname(__FILE__, 2) . '/hooks'; ?>
 	<?php  ?>
     <div id="coment" class="col-md-9 col-xs-12">
         <div class="bs-callout bs-callout-warning"> 
-            <h4>Welcome to <?php echo $MyPlugin->title; ?></h4> 
+            <h4>Welcome to <?php echo $MyPlugin->title;  echo " Version: ". $info['Version']; ?></h4> 
             
             <p>Thank you for choosing this plugin for your project, please click on the <strong><?php echo $MyPlugin->name; ?></strong> enable button to continue.
                <br>
