@@ -1,5 +1,6 @@
 --
 -- SQL Table structure for `Auditor` table
+-- File version 1.93, 2021-03-05
 --
 
 CREATE TABLE IF NOT EXISTS `auditor` (

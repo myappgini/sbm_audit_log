@@ -78,6 +78,12 @@ $MyPlugin->my_copy_file($source, $dest, true);
 $source = dirname(__FILE__) . '/app-resources/hooks/auditLog_timeline.php';
 $dest = $path . '/hooks/audit/auditLog_timeline.php';
 $MyPlugin->my_copy_file($source, $dest, true);
+$source = dirname(__FILE__) . '/app-resources/dropdown_menu.html';
+$dest = $path . '/hooks/audit/dropdown_menu.html';
+$MyPlugin->my_copy_file($source, $dest, true);
+$source = dirname(__FILE__) . '/app-resources/Clipboard_AppGini_AuditLog_Table.txt';
+$dest = $path . '/hooks/audit/Clipboard_AppGini_AuditLog_Table.txt';
+$MyPlugin->my_copy_file($source, $dest, true);
 
 
 $source = dirname(__FILE__) . '/app-resources/button.js';
